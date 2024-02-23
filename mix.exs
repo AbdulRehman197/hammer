@@ -21,7 +21,7 @@ defmodule Hammer.Mixfile do
 
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
-    [mod: {Hammer.Application, []}, extra_applications: [:logger, :runtime_tools]]
+    [mod: {Hammer.Application, []}, extra_applications: [:logger, :runtime_tools,:wx,:observer]]
   end
 
   defp deps do

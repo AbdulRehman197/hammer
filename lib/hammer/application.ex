@@ -56,13 +56,18 @@ defmodule Hammer.Application do
   require Logger
 
   def start(_type, _args) do
-    config =
-      Application.get_env(
-        :hammer,
-        :backend,
-        {Hammer.Backend.ETS, []}
-      )
+    # config =
+    #   Application.get_env(
+    #     :hammer,
+    #     :backend,
+    #     {Hammer.Backend.ETS, []}
+    #   )
+    # children = [
+    #   {DynamicSupervisor, strategy: :one_for_one, name: Hammer.DynamicSupervisor}
+    # ]
 
-    Hammer.Supervisor.start_link(config, name: Hammer.Supervisor)
-  end
+    # Supervisor.start_link(children,  strategy: :one_for_one)
+    # Hammer.Supervisor.start_link(config, name: Hammer.Supervisor)
+    Hammer.DynamicSupervisor.start_link(Hammer.DynamicSupervisor)
+    end
 end

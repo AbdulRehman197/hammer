@@ -36,7 +36,7 @@ defmodule Hammer.Backend.ETS do
   @type bucket_info ::
           {key :: bucket_key, count :: integer, created :: integer, updated :: integer}
 
-  @ets_table_name :hammer_ets_buckets
+  @ets_table_name 
 
   ## Public API
 
@@ -45,6 +45,7 @@ defmodule Hammer.Backend.ETS do
   end
 
   def start(args) do
+  
     GenServer.start(__MODULE__, args)
   end
 
@@ -55,6 +56,7 @@ defmodule Hammer.Backend.ETS do
   @doc """
   """
   def start_link(args) do
+   
     GenServer.start_link(__MODULE__, args)
   end
 
@@ -163,7 +165,9 @@ defmodule Hammer.Backend.ETS do
     cleanup_interval_ms = Keyword.get(args, :cleanup_interval_ms)
     expiry_ms = Keyword.get(args, :expiry_ms)
     ets_table_type = Keyword.get(args, :ets_table_type, :set)
-
+    ets_table_name = Keyword.get(args, :ets_table_name)
+    
+    IO.inspect(ets_table_name)
     if !expiry_ms do
       raise RuntimeError, "Missing required config: expiry_ms"
     end
@@ -176,9 +180,9 @@ defmodule Hammer.Backend.ETS do
       raise RuntimeError, "Invalid config: ets_table_type '#{ets_table_type}'"
     end
 
-    case :ets.info(@ets_table_name) do
+    case :ets.info(ets_table_name) do
       :undefined ->
-        :ets.new(@ets_table_name, [:named_table, ets_table_type, :public])
+        :ets.new(ets_table_name, [:named_table, ets_table_type, :public])
         :timer.send_interval(cleanup_interval_ms, :prune)
 
       _ ->
@@ -188,6 +192,7 @@ defmodule Hammer.Backend.ETS do
     state = %{
       cleanup_interval_ms: cleanup_interval_ms,
       expiry_ms: expiry_ms
+      ets_table_name: ets_table_name
     }
 
     {:ok, state}
@@ -199,10 +204,11 @@ defmodule Hammer.Backend.ETS do
 
   def handle_info(:prune, state) do
     %{expiry_ms: expiry_ms} = state
+    %{ets_table_name: ets_table_name} = state
     now = Utils.timestamp()
     expire_before = now - expiry_ms
 
-    :ets.select_delete(@ets_table_name, [
+    :ets.select_delete(ets_table_name, [
       {{:_, :_, :_, :"$1"}, [{:<, :"$1", expire_before}], [true]}
     ])
 
